@@ -1,728 +1,486 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  ShoppingCart, Menu, X, ChevronRight, CheckCircle2, 
-  Monitor, Clock, Zap, MessageCircle, Headphones, 
-  CreditCard, ShieldCheck, Download, Server, Cpu
-} from 'lucide-react';
-
-// --- DATA ---
-const collections = [
-  {
-    id: 'col-1',
-    title: 'Colección Completa de Cursos y Guías',
-    shortDesc: 'Domina la producción desde cero hasta nivel experto.',
-    description: 'Más de 500 horas de contenido en video HD, guías en PDF y proyectos desarmados de los mejores productores del mundo. Aprende teoría musical, diseño sonoro, mezcla y mastering paso a paso.',
-    items: ['Masterclasses exclusivas', 'Guías de Teoría Musical y Armonía', 'Mastering', 'Técnicas de mezcla de la industria'],
-    qty: '+200 Recursos',
-    value: '$18.000',
-    price: '$7.999',
-    image: 'https://i3.wp.com/silencio.com.ar/wp-content/uploads/2024/03/cursos-produccion-musical-1.jpg?resize=1920,1282&ssl=1',
-    paymentLink: 'https://mpago.la/2WpfyMa'
-  },
-  {
-    id: 'col-2',
-    title: 'Colección Completa de DAWs',
-    shortDesc: 'Los secuenciadores líderes del mercado actualizados.',
-    description: 'Obtén las últimas versiones de los Digital Audio Workstations más utilizados en la industria musical, optimizados y listos para trabajar en tu estudio sin limitaciones.',
-    items: ['Ableton Live Suite', 'FL Studio', 'Cubase', 'Pro Tools'],
-    qty: 'Top 5 DAWs',
-    value: '$19.000',
-    price: '$7.999',
-    image: 'https://www.48tracks.com/content-assets/public/eyJhbGciOiJIUzI1NiJ9.eyJvYmplY3Rfa2V5IjoiYXEzemF2Y3czaWlpOXMxNGk5c2x5d245ZXl2bCIsImRvbWFpbiI6Ind3dy40OHRyYWNrcy5jb20ifQ.NaFYRKCEaiJ5ei7v_hgcZZiqsFdaXLBQCEWrZ6eTwHs',
-    paymentLink: 'https://mpago.la/2rzZuDy'
-  },
-  {
-    id: 'col-3',
-    title: 'Colección Completa de Librerías y MIDI',
-    shortDesc: 'El arsenal sonoro definitivo para cualquier género.',
-    description: 'Miles de samples, loops, one-shots y archivos MIDI organizados por género.',
-    items: ['Packs de Reggaeton, Trap, Tech House, Pop y todos los generos', 'Librerías Kontakt Premium', 'Más de 10.000 archivos MIDI de acordes y melodías', 'Baterías acústicas y electrónicas procesadas'],
-    qty: 'Miles de Sonidos',
-    value: '$22.000',
-    price: '$7.999',
-    image: 'https://wololosound.com/wp-content/uploads/programas-para-hacer-musica.jpg',
-    paymentLink: 'https://mpago.la/1Sxd65g'
-  },
-  {
-    id: 'col-4',
-    title: 'Colección Completa de Plantillas y Presets',
-    shortDesc: 'Acelera tu flujo de trabajo con configuraciones pro.',
-    description: 'Bancos de sonidos para los sintetizadores más famosos y plantillas de mezcla/mastering listas para cargar tus vocales o instrumentales y sonar a nivel radio.',
-    items: ['Presets para Serum, Omnisphere', 'Vocal Chains para grabación (Urbano, Pop, Rock, etc.)', 'Templates de Mezcla y Mastering', 'Cadenas de efectos para bajos y sintes'],
-    qty: '+15.000 Archivos',
-    value: '$15.000',
-    price: '$7.999',
-    image: 'https://www.safecreative.org/tips/es/wp-content/uploads/2024/06/ableton1-696x435.jpg',
-    paymentLink: 'https://mpago.la/2Q5eqWQ'
-  },
-  {
-    id: 'col-5',
-    title: 'Colección Completa de Plugins',
-    shortDesc: 'Los efectos e instrumentos virtuales que necesitas para trabajar profesionalmente',
-    description: 'Las suites de mezcla, ecualización, compresión y masterización que utilizan los ingenieros ganadores de Grammys, junto con los sintetizadores más potentes.',
-    items: ['Suites de FabFilter, Waves, iZotope, etc.', 'Autotune Pro y procesadores vocales', 'Sintetizadores (Omnisphere, Kontakt, Serum, Nexus)', 'Emuladores de equipo analógico (SSL, API, etc.)', 'VSTs esenciales (Keyscape, Addictive Drums, GuitarRig Pro, etc.)'],
-    qty: '+500 Plugins',
-    value: '$25.000',
-    price: '$7.999',
-    image: 'https://venusmamba.com/wp-content/uploads/2024/10/1728154015908_n3va0j_2_0-1024x572.jpg',
-    paymentLink: 'https://mpago.la/2dSpQ4w'
-  }
-];
-
-const combos = [
-  {
-    id: 'cmb-1',
-    title: 'Pack Inicial Grabación',
-    desc: 'Todo lo que necesitas para grabar voces con calidad profesional en casa.',
-    includes: ['Colección completa de DAWs', 'Antares Auto-Tune Pro', 'FabFilter Pro Bundle', 'Vocal Presets y plantillas de grabación', 'Videos tutoriales para comenzar a grabar'],
-    oldPrice: '$20.000',
-    price: '$9.999',
-    savings: '$10.001',
-    urgency: 'Oferta termina hoy',
-    paymentLink: 'https://mpago.la/2iSkWVy'
-  },
-  {
-    id: 'cmb-2',
-    title: 'Pack Productor Urbano',
-    desc: 'El kit definitivo para hacer beats',
-    includes: ['Colección completa de DAWs', 'Librerías multi-género', 'Pack de plugins esenciales', 'Colección completa de cursos y guías'],
-    oldPrice: '$22.000',
-    price: '$9.999',
-    savings: '$12.001',
-    urgency: 'Últimos 3 disponibles',
-    paymentLink: 'https://mpago.la/1TZs13v'
-  },
-  {
-    id: 'cmb-3',
-    title: 'Pack Mezcla y Mastering',
-    desc: 'Herramientas de ingeniería para pulir tus tracks al nivel de la industria.',
-    includes: ['Colección completa de DAWs', 'Colección completa de plugins y pack de plugins', 'Colección completa de cursos y guías'],
-    oldPrice: '$25.000',
-    price: '$9.999',
-    savings: '$15.001',
-    urgency: 'Solo por 48hs',
-    paymentLink: 'https://mpago.la/17uZJCf'
-  },
-  {
-    id: 'cmb-4',
-    title: 'Pack Full',
-    desc: 'La suite completa para transformar tu habitación en un estudio pro.',
-    includes: ['Colección completa de DAWs', 'Colección completa de plantillas y presets', 'Librerías multi-género', 'Colección completa de cursos y guías', 'Colección completa de packs y plugins'],
-    oldPrice: '$35.000',
-    price: '$13.999',
-    savings: '$21.001',
-    urgency: 'Oferta por tiempo limitado',
-    paymentLink: 'https://mpago.la/2yjZ3Z2'
-  }
-];
-
-const carouselImages = [
-  { img: 'https://venusmamba.com/wp-content/uploads/2024/10/1728154015908_n3va0j_2_0-1024x572.jpg', title: 'PLUGINS PROFESIONALES', subtitle: 'Lleva tu sonido al siguiente nivel' },
-  { img: 'https://www.48tracks.com/content-assets/public/eyJhbGciOiJIUzI1NiJ9.eyJvYmplY3Rfa2V5IjoiYXEzemF2Y3czaWlpOXMxNGk5c2x5d245ZXl2bCIsImRvbWFpbiI6Ind3dy40OHRyYWNrcy5jb20ifQ.NaFYRKCEaiJ5ei7v_hgcZZiqsFdaXLBQCEWrZ6eTwHs', title: 'DAWs ACTUALIZADOS', subtitle: 'El corazón de tu estudio' },
-  { img: 'https://wololosound.com/wp-content/uploads/programas-para-hacer-musica.jpg', title: 'LIBRERÍAS DE SONIDO', subtitle: 'Los mejores samples para crear sin límites' },
-  { img: 'https://guitarrec.com/wp-content/uploads/2025/06/Mejores-plugins-gratis-VST-AU-AAX-lista-GuitarRec-620x349.jpg', title: 'COMBOS ESPECIALES', subtitle: 'Ahorra comprando el paquete que necesitas' }
-];
-
-
-// --- COMPONENTES ---
-
-const Marquee = () => (
-  <div className="bg-gradient-to-r from-purple-800 via-blue-900 to-purple-800 text-white py-2 overflow-hidden border-b border-purple-500/30">
-    <div className="animate-marquee whitespace-nowrap flex space-x-12 text-xs md:text-sm font-bold tracking-widest uppercase">
-      <span>🚀 Envío Digital Inmediato</span>
-      <span>💬 Soporte por WhatsApp</span>
-      <span>🔥 Promociones exclusivas en Combos</span>
-      <span>🎧 Asistencia remota 24hs</span>
-      <span>🚀 Envío Digital Inmediato</span>
-      <span>💬 Soporte por WhatsApp</span>
-      <span>🔥 Promociones exclusivas en Combos</span>
-      <span>🎧 Asistencia remota 24hs</span>
-    </div>
-  </div>
-);
-
-const HeroCarousel = () => {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % carouselImages.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="relative w-full h-[300px] md:h-[500px] overflow-hidden bg-gray-900">
-      {carouselImages.map((slide, index) => (
-        <div 
-          key={index}
-          className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ${index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-        >
-          <img src={slide.img} alt={slide.title} className="w-full h-full object-cover opacity-50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent"></div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <h2 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)] mb-2 uppercase tracking-tight">
-              {slide.title}
-            </h2>
-            <p className="text-lg md:text-2xl text-gray-300 font-light">{slide.subtitle}</p>
-          </div>
-        </div>
-      ))}
-      <div className="absolute bottom-6 left-0 right-0 flex justify-center space-x-3 z-20">
-        {carouselImages.map((_, idx) => (
-          <button 
-            key={idx} 
-            onClick={() => setCurrent(idx)}
-            className={`w-3 h-3 rounded-full transition-all ${idx === current ? 'bg-purple-500 w-8' : 'bg-gray-600'}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const ModalCompra = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-[#121216] border border-purple-500/50 rounded-2xl p-6 md:p-8 max-w-md w-full relative shadow-[0_0_40px_rgba(168,85,247,0.2)]">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">
-          <X size={24} />
-        </button>
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-gradient-to-tr from-purple-600 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/30">
-            <ShoppingCart size={32} className="text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-white mb-2">Checkout Rápido</h3>
-          <p className="text-gray-400 text-sm">Selecciona tu método de pago preferido para completar la orden y recibir el enlace de descarga.</p>
-        </div>
-        
-        <div className="space-y-3">
-          <button className="w-full bg-[#009EE3] hover:bg-[#0089c4] text-white font-bold py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-            <CreditCard size={20} />
-            <span>MercadoPago</span>
-          </button>
-          <button className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-bold py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-            <CreditCard size={20} />
-            <span>Tarjeta de Crédito/Débito</span>
-          </button>
-          <button className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-lg flex items-center justify-center space-x-2 border border-gray-600 transition-colors">
-            <ShieldCheck size={20} />
-            <span>Transferencia Bancaria (10% OFF)</span>
-          </button>
-          <button className="w-full bg-[#25D366] hover:bg-[#1ebd5a] text-white font-bold py-3 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-            <MessageCircle size={20} />
-            <span>Comprar por WhatsApp</span>
-          </button>
-        </div>
-        
-        <div className="mt-6 text-center text-xs text-gray-500 flex items-center justify-center space-x-1">
-          <ShieldCheck size={14} />
-          <span>Compra 100% Segura y Protegida</span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- VIEWS ---
-
-const Inicio = ({ setTab }) => (
-  <div className="animate-fade-in">
-    <HeroCarousel />
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zona Audio Arg | Producción Musical</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     
-    {/* COLECCIONES PREVIEW */}
-    <section className="py-16 px-4 max-w-7xl mx-auto">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
-          🎛 Nuestras <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">Colecciones Completas</span>
-        </h2>
-        <p className="text-gray-400 text-lg">El ecosistema definitivo para el productor moderno.</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {collections.slice(0, 5).map((col) => (
-          <div key={col.id} className="bg-[#15151a] border border-gray-800 rounded-xl overflow-hidden hover:border-purple-500/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] transition-all group">
-            <div className="h-48 overflow-hidden relative">
-              <div className="absolute inset-0 bg-gradient-to-t from-[#15151a] to-transparent z-10"></div>
-              <img src={col.image} alt={col.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-            </div>
-            <div className="p-6 relative z-20 -mt-10">
-              <div className="bg-purple-900/80 backdrop-blur-md text-xs text-purple-200 font-bold px-3 py-1 rounded-full inline-block mb-3 border border-purple-500/30">
-                Premium
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">{col.title}</h3>
-              <p className="text-gray-400 text-sm mb-6">{col.shortDesc}</p>
-              <button 
-                onClick={() => setTab('tienda')}
-                className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 rounded border border-gray-600 hover:border-purple-400 transition-colors flex items-center justify-center"
-              >
-                Ver Colección <ChevronRight size={16} className="ml-1" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    {/* COMBOS ESPECIALES */}
-    <section className="py-16 px-4 bg-gradient-to-b from-[#0a0a0c] to-[#121216] border-y border-gray-800">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
-            🔥 Combos <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff512f] to-[#dd2476]">Especiales</span>
-          </h2>
-          <p className="text-gray-400 text-lg">Soluciones integrales al mejor precio del mercado.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {combos.map((combo) => (
-            <div key={combo.id} className="bg-gradient-to-br from-[#1c1c24] to-[#111116] border border-gray-700 rounded-2xl p-6 relative overflow-hidden group hover:border-[#dd2476] transition-all">
-              {/* Urgency tag */}
-              <div className="absolute top-4 right-4 bg-red-500/10 border border-red-500/50 text-red-400 text-xs font-bold px-3 py-1 rounded-full flex items-center animate-pulse">
-                <Clock size={12} className="mr-1" /> {combo.urgency}
-              </div>
-
-              <h3 className="text-2xl font-bold text-white mb-2 pr-24">{combo.title}</h3>
-              <p className="text-gray-400 text-sm mb-6 h-10">{combo.desc}</p>
-
-              <div className="bg-black/30 rounded-lg p-4 mb-6 border border-gray-800/50">
-                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Incluye:</p>
-                <ul className="space-y-2">
-                  {combo.includes.map((item, i) => (
-                    <li key={i} className="text-sm text-gray-300 flex items-start">
-                      <CheckCircle2 size={16} className="text-green-400 mr-2 mt-0.5 shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="flex items-end justify-between mt-auto">
-                <div>
-                  <p className="text-gray-500 line-through text-sm">{combo.oldPrice}</p>
-                  <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">{combo.price}</p>
-                  <p className="text-green-400 text-xs font-bold mt-1 bg-green-400/10 inline-block px-2 py-0.5 rounded">Ahorras {combo.savings}</p>
-                </div>
-                <button 
-                  onClick={() => setTab('combos')}
-                  className="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-white/20 transition-all"
-                >
-                  Ver Combo
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    {/* POR QUE COMPRAR */}
-    <section className="py-20 px-4 max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-        <h2 className="text-3xl font-black text-white mb-4">🔒 ¿Por qué comprar en <span className="text-purple-400">Zona Audio Arg</span>?</h2>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 text-center">
-        {[
-          { icon: <Monitor className="text-blue-400 w-10 h-10 mx-auto" />, title: "Instalación Remota", desc: "Asistida vía TeamViewer" },
-          { icon: <Clock className="text-purple-400 w-10 h-10 mx-auto" />, title: "Asistencia 24hs", desc: "Soporte técnico real" },
-          { icon: <Zap className="text-yellow-400 w-10 h-10 mx-auto" />, title: "Entrega Inmediata", desc: "Link de descarga al instante" },
-          { icon: <Headphones className="text-green-400 w-10 h-10 mx-auto" />, title: "Soporte Personalizado", desc: "Productores ayudando a productores" },
-          { icon: <MessageCircle className="text-emerald-400 w-10 h-10 mx-auto" />, title: "Atención WhatsApp", desc: "Contacto directo y rápido" }
-        ].map((feat, idx) => (
-          <div key={idx} className="bg-[#121216] border border-gray-800 p-6 rounded-xl hover:-translate-y-2 transition-transform duration-300">
-            <div className="bg-gray-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
-              {feat.icon}
-            </div>
-            <h4 className="text-white font-bold mb-2">{feat.title}</h4>
-            <p className="text-gray-400 text-sm">{feat.desc}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  </div>
-);
-
-const Tienda = ({ openModal }) => (
-  <div className="animate-fade-in py-12 px-4 max-w-5xl mx-auto">
-    <div className="text-center mb-16">
-      <h1 className="text-4xl md:text-5xl font-black text-white mb-4">Catálogo de <span className="text-purple-500">Colecciones</span></h1>
-      <p className="text-gray-400">Recursos premium listos para instalar. Compra única, acceso para siempre.</p>
-    </div>
-
-    <div className="space-y-16">
-      {collections.map((col) => (
-        <div key={col.id} className="bg-[#15151a] border border-gray-800 rounded-2xl overflow-hidden flex flex-col md:flex-row hover:border-purple-500/30 transition-colors shadow-2xl">
-          <div className="md:w-5/12 relative">
-            <img src={col.image} alt={col.title} className="w-full h-full object-cover min-h-[300px]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#15151a] via-[#15151a]/20 to-transparent md:bg-gradient-to-r md:from-transparent md:to-[#15151a]"></div>
-            <div className="absolute top-4 left-4 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-              {col.qty}
-            </div>
-          </div>
-          
-          <div className="md:w-7/12 p-8 flex flex-col">
-            <h2 className="text-3xl font-bold text-white mb-2">{col.title}</h2>
-            <p className="text-purple-300 font-medium mb-4">{col.shortDesc}</p>
-            <p className="text-gray-400 text-sm mb-6 leading-relaxed">{col.description}</p>
-            
-            <div className="mb-6 bg-black/40 p-5 rounded-xl border border-gray-800">
-              <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-3 flex items-center">
-                <Server size={16} className="mr-2 text-blue-500" /> Contenido Principal:
-              </h4>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {col.items.map((item, i) => (
-                  <li key={i} className="text-sm text-gray-300 flex items-start">
-                    <span className="text-blue-500 mr-2 mt-0.5">•</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* BLOQUE OBLIGATORIO */}
-            <div className="bg-gradient-to-br from-green-900/20 to-blue-900/20 border border-green-500/20 rounded-xl p-4 mb-6">
-              <ul className="space-y-2">
-                <li className="flex items-center text-sm text-gray-200"><CheckCircle2 size={16} className="text-green-500 mr-2" /> Acceso completo a todos los recursos de la categoría</li>
-                <li className="flex items-center text-sm text-gray-200"><CheckCircle2 size={16} className="text-green-500 mr-2" /> Entrega digital inmediata</li>
-                <li className="flex items-center text-sm text-gray-200"><CheckCircle2 size={16} className="text-green-500 mr-2" /> Instalación y configuración asistida mediante TeamViewer</li>
-                <li className="flex items-center text-sm text-gray-200"><CheckCircle2 size={16} className="text-green-500 mr-2" /> Asistencia remota 24hs</li>
-                <li className="flex items-center text-sm text-gray-200"><CheckCircle2 size={16} className="text-green-500 mr-2" /> Soporte por WhatsApp</li>
-              </ul>
-            </div>
-
-            <div className="mt-auto flex flex-col sm:flex-row items-center justify-between border-t border-gray-800 pt-6">
-              <div className="mb-4 sm:mb-0 text-center sm:text-left w-full sm:w-auto">
-                <p className="text-gray-500 text-sm">Valor estimado: <span className="line-through">{col.value}</span></p>
-                <p className="text-4xl font-black text-white">{col.price} <span className="text-sm font-normal text-gray-500">ARS</span></p>
-              </div>
-              <a 
-                href={col.paymentLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-4 px-10 rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)] transition-all flex items-center justify-center transform hover:-translate-y-1"
-              >
-                <ShoppingCart size={20} className="mr-2" /> Comprar
-              </a>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const CombosView = ({ openModal }) => (
-  <div className="animate-fade-in py-12 px-4 max-w-6xl mx-auto">
-     <div className="text-center mb-16">
-      <h1 className="text-4xl md:text-5xl font-black text-white mb-4">Combos <span className="text-[#ff512f]">Especiales</span></h1>
-      <p className="text-gray-400">Packs armados estratégicamente para ahorrar dinero y potenciar tu estudio.</p>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {combos.map((combo) => (
-        <div key={combo.id} className="bg-[#15151a] border border-gray-700 rounded-2xl p-8 relative flex flex-col hover:border-blue-500/50 transition-colors shadow-xl">
-           <div className="absolute top-0 right-0 bg-[#ff512f] text-white text-xs font-bold px-4 py-1 rounded-bl-xl rounded-tr-xl flex items-center">
-            🔥 {combo.urgency}
-          </div>
-          <h2 className="text-3xl font-black text-white mb-2">{combo.title}</h2>
-          <p className="text-gray-400 mb-8">{combo.desc}</p>
-
-          <div className="bg-black/30 rounded-xl p-5 mb-8 flex-grow border border-gray-800">
-            <h4 className="text-white text-sm font-bold uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">El pack incluye:</h4>
-            <ul className="space-y-3">
-              {combo.includes.map((item, i) => (
-                <li key={i} className="text-gray-300 flex items-start">
-                  <CheckCircle2 size={20} className="text-blue-500 mr-3 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-              <li className="text-gray-300 flex items-start mt-4 pt-4 border-t border-gray-800/50">
-                <Monitor size={20} className="text-purple-500 mr-3 shrink-0" />
-                <span className="font-semibold text-purple-200">Instalación remota (TeamViewer) y soporte incluidos.</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-between bg-gradient-to-r from-gray-900 to-[#121216] p-6 rounded-xl border border-gray-800">
-            <div className="mb-4 sm:mb-0 text-center sm:text-left">
-              <p className="text-gray-500 line-through mb-1">{combo.oldPrice}</p>
-              <p className="text-4xl font-black text-white">{combo.price} <span className="text-sm font-normal text-gray-500">ARS</span></p>
-              <p className="text-green-400 text-sm font-bold mt-1">Ahorras {combo.savings}</p>
-            </div>
-            <a 
-              href={combo.paymentLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto bg-white text-black hover:bg-gray-200 font-bold py-4 px-8 rounded-xl shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all flex items-center justify-center"
-            >
-              Comprar Combo
-            </a>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const Soporte = () => (
-  <div className="animate-fade-in py-12 px-4 max-w-4xl mx-auto">
-    <div className="text-center mb-16">
-      <h1 className="text-4xl md:text-5xl font-black text-white mb-4">Centro de <span className="text-green-400">Soporte</span></h1>
-      <p className="text-gray-400">Estamos aquí para ayudarte. Instalamos todo por vos para que solo te preocupes por crear.</p>
-    </div>
-
-    <div className="space-y-8">
-      {/* Como funciona */}
-      <div className="bg-[#15151a] border border-gray-800 p-8 rounded-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 opacity-5 w-64 h-64 pointer-events-none">
-           <Monitor size={256} />
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-          <Cpu className="text-purple-500 mr-3" /> ¿Cómo funciona la instalación remota?
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-          <div className="bg-black/40 p-5 rounded-xl border border-gray-800/50">
-            <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mb-3">1</div>
-            <h4 className="text-white font-bold mb-2">Realizas tu compra</h4>
-            <p className="text-gray-400 text-sm">Te dirige automáticamente a un link de Google Drive. Descargas lo que quieras utilizar proximamente.</p>
-          </div>
-          <div className="bg-black/40 p-5 rounded-xl border border-gray-800/50">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mb-3">2</div>
-            <h4 className="text-white font-bold mb-2">Descargas TeamViewer</h4>
-            <p className="text-gray-400 text-sm">Es un programa gratuito que nos permite acceder a tu PC temporalmente de forma 100% segura.</p>
-          </div>
-          <div className="bg-black/40 p-5 rounded-xl border border-gray-800/50">
-            <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mb-3">3</div>
-            <h4 className="text-white font-bold mb-2">Nos conectamos</h4>
-            <p className="text-gray-400 text-sm">Nos envías un mensaje a WhatsApp, nos conectamos y dejamos todo instalado, activado y configurado en tu DAW.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Pagos */}
-      <div className="bg-[#15151a] border border-gray-800 p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 flex items-center">
-            <CreditCard className="text-blue-500 mr-3" /> Métodos de Pago
-          </h2>
-          <p className="text-gray-400 mb-4 md:mb-0">Aceptamos todas las tarjetas y plataformas seguras.</p>
-        </div>
-        <div className="flex flex-wrap gap-2 md:gap-4 mt-4 md:mt-0">
-          <div className="bg-white px-4 py-2 rounded font-bold text-[#009EE3]">MercadoPago</div>
-          <div className="bg-gray-800 px-4 py-2 rounded font-bold text-white border border-gray-700">Transferencia</div>
-          <div className="bg-gradient-to-r from-orange-500 to-yellow-500 px-4 py-2 rounded font-bold text-white shadow-lg">Tarjeta</div>
-        </div>
-      </div>
-
-      {/* FAQ */}
-      <div className="bg-[#15151a] border border-gray-800 p-8 rounded-2xl">
-        <h2 className="text-2xl font-bold text-white mb-6">Preguntas Frecuentes</h2>
-        <div className="space-y-4">
-          {[
-            { q: "¿Los programas son permanentes?", a: "Sí. Todo lo que adquieres tiene licencia/activación permanente. No hay pagos mensuales ni suscripciones." },
-            { q: "¿Sirven para Mac y Windows?", a: "La mayoría de nuestras colecciones son compatibles con ambos sistemas operativos. Al comprar, nos indicas tu SO y te enviamos la versión correcta." },
-            { q: "¿Qué pasa si formateo mi PC?", a: "Tus links de descarga quedan activos para siempre en tu correo. Si necesitas ayuda para reinstalar, nuestro soporte te asiste sin cargo extra." },
-            { q: "¿Cuánto tarda la instalación remota?", a: "Depende del pack, pero normalmente entre 15 y 30 minutos dejamos todo funcionando perfecto y testeado en tu DAW." }
-          ].map((faq, i) => (
-            <div key={i} className="bg-black/30 p-4 rounded-lg border border-gray-800">
-              <h4 className="text-white font-bold mb-1 flex items-start">
-                <span className="text-purple-500 mr-2 mt-0.5">Q.</span> {faq.q}
-              </h4>
-              <p className="text-gray-400 text-sm ml-6">{faq.a}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-
-// --- APP PRINCIPAL ---
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState('inicio');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const navItems = [
-    { id: 'inicio', label: 'INICIO' },
-    { id: 'tienda', label: 'TIENDA' },
-    { id: 'combos', label: 'COMBOS' },
-    { id: 'soporte', label: 'SOPORTE' }
-  ];
-
-  const handleNavClick = (id) => {
-    setActiveTab(id);
-    setIsMobileMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white font-sans selection:bg-purple-500 selection:text-white pb-20 md:pb-0">
-      <style dangerouslySetInnerHTML={{__html: `
+    <style>
+        body { background-color: #0a0a0c; color: white; font-family: ui-sans-serif, system-ui, sans-serif; }
         @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
-        .animate-marquee {
-          display: inline-block;
-          animation: marquee 20s linear infinite;
-          padding-left: 100%;
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.4s ease-in-out;
-        }
+        .animate-marquee { display: inline-block; animation: marquee 20s linear infinite; padding-left: 100%; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-      `}} />
+        /* Clases para manejar las pestañas */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-purple-500 selection:text-white pb-20 md:pb-0">
 
-      <Marquee />
+    <div class="bg-gradient-to-r from-purple-800 via-blue-900 to-purple-800 py-2 overflow-hidden border-b border-purple-500/30">
+        <div class="animate-marquee whitespace-nowrap flex space-x-12 text-xs md:text-sm font-bold tracking-widest uppercase text-white">
+            <span>🚀 Envío Digital Inmediato</span>
+            <span>💬 Soporte por WhatsApp</span>
+            <span>🔥 Promociones exclusivas en Combos</span>
+            <span>🎧 Asistencia remota 24hs</span>
+            <span>🚀 Envío Digital Inmediato</span>
+            <span>💬 Soporte por WhatsApp</span>
+            <span>🔥 Promociones exclusivas en Combos</span>
+            <span>🎧 Asistencia remota 24hs</span>
+        </div>
+    </div>
 
-      {/* HEADER */}
-      <header className="bg-[#0a0a0c]/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-          
-          {/* LOGO */}
-          <div 
-            className="flex items-center space-x-2 cursor-pointer group"
-            onClick={() => handleNavClick('inicio')}
-          >
-            <div className="w-10 h-10 bg-gradient-to-tr from-purple-600 to-blue-600 rounded-lg flex items-center justify-center transform group-hover:rotate-12 transition-transform">
-              <Headphones className="text-white" size={24} />
+    <header class="bg-[#0a0a0c]/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-2 cursor-pointer group" onclick="setTab('inicio')">
+                <div class="w-10 h-10 bg-gradient-to-tr from-purple-600 to-blue-600 rounded-lg flex items-center justify-center transform group-hover:rotate-12 transition-transform">
+                    <i data-lucide="headphones" class="text-white w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight leading-none text-white group-hover:text-purple-400 transition-colors">ZONA AUDIO</h1>
+                    <p class="text-[10px] tracking-widest text-blue-400 font-bold uppercase">Argentina</p>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex space-x-8">
+                <button onclick="setTab('inicio')" id="nav-inicio" class="nav-btn text-sm font-bold tracking-wider transition-colors relative text-white">
+                    INICIO
+                    <span class="nav-indicator absolute -bottom-7 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"></span>
+                </button>
+                <button onclick="setTab('tienda')" id="nav-tienda" class="nav-btn text-sm font-bold tracking-wider transition-colors relative text-gray-400 hover:text-white">
+                    TIENDA
+                    <span class="nav-indicator hidden absolute -bottom-7 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"></span>
+                </button>
+                <button onclick="setTab('combos')" id="nav-combos" class="nav-btn text-sm font-bold tracking-wider transition-colors relative text-gray-400 hover:text-white">
+                    COMBOS
+                    <span class="nav-indicator hidden absolute -bottom-7 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"></span>
+                </button>
+                <button onclick="setTab('soporte')" id="nav-soporte" class="nav-btn text-sm font-bold tracking-wider transition-colors relative text-gray-400 hover:text-white">
+                    SOPORTE
+                    <span class="nav-indicator hidden absolute -bottom-7 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"></span>
+                </button>
+            </nav>
+
+            <div class="flex items-center md:hidden">
+                <button class="text-gray-300 hover:text-white" onclick="toggleMobileMenu()">
+                    <i data-lucide="menu" class="w-7 h-7"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-[#121216] border-b border-gray-800 shadow-2xl z-50 animate-fade-in">
+            <div class="flex flex-col py-4 px-4 space-y-4">
+                <button onclick="setTab('inicio')" class="text-left text-lg font-bold py-2 px-4 rounded-lg text-purple-400 bg-purple-900/40 border border-purple-500/30">INICIO</button>
+                <button onclick="setTab('tienda')" class="text-left text-lg font-bold py-2 px-4 rounded-lg text-gray-400">TIENDA</button>
+                <button onclick="setTab('combos')" class="text-left text-lg font-bold py-2 px-4 rounded-lg text-gray-400">COMBOS</button>
+                <button onclick="setTab('soporte')" class="text-left text-lg font-bold py-2 px-4 rounded-lg text-gray-400">SOPORTE</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="min-h-screen">
+        
+        <div id="view-inicio" class="tab-content active animate-fade-in">
+            <div class="relative w-full h-[300px] md:h-[500px] overflow-hidden bg-gray-900" id="carousel-container">
+                </div>
+
+            <section class="py-16 px-4 max-w-7xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-5xl font-black text-white mb-4">
+                        🎛 Nuestras <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">Colecciones Completas</span>
+                    </h2>
+                    <p class="text-gray-400 text-lg">El ecosistema definitivo para el productor moderno.</p>
+                </div>
+                <div id="inicio-collections-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </section>
+
+            <section class="py-16 px-4 bg-gradient-to-b from-[#0a0a0c] to-[#121216] border-y border-gray-800">
+                <div class="max-w-7xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl md:text-5xl font-black text-white mb-4">
+                            🔥 Combos <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#ff512f] to-[#dd2476]">Especiales</span>
+                        </h2>
+                        <p class="text-gray-400 text-lg">Soluciones integrales al mejor precio del mercado.</p>
+                    </div>
+                    <div id="inicio-combos-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        </div>
+                </div>
+            </section>
+
+            <section class="py-20 px-4 max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl font-black text-white mb-4">🔒 ¿Por qué comprar en <span class="text-purple-400">Zona Audio Arg</span>?</h2>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 text-center">
+                    <div class="bg-[#121216] border border-gray-800 p-6 rounded-xl hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gray-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
+                            <i data-lucide="monitor" class="text-blue-400 w-10 h-10"></i>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Instalación Remota</h4>
+                        <p class="text-gray-400 text-sm">Asistida vía TeamViewer</p>
+                    </div>
+                    <div class="bg-[#121216] border border-gray-800 p-6 rounded-xl hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gray-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
+                            <i data-lucide="clock" class="text-purple-400 w-10 h-10"></i>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Asistencia 24hs</h4>
+                        <p class="text-gray-400 text-sm">Soporte técnico real</p>
+                    </div>
+                    <div class="bg-[#121216] border border-gray-800 p-6 rounded-xl hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gray-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
+                            <i data-lucide="zap" class="text-yellow-400 w-10 h-10"></i>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Entrega Inmediata</h4>
+                        <p class="text-gray-400 text-sm">Link de descarga al instante</p>
+                    </div>
+                    <div class="bg-[#121216] border border-gray-800 p-6 rounded-xl hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gray-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
+                            <i data-lucide="headphones" class="text-green-400 w-10 h-10"></i>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Soporte Personalizado</h4>
+                        <p class="text-gray-400 text-sm">Productores para productores</p>
+                    </div>
+                    <div class="bg-[#121216] border border-gray-800 p-6 rounded-xl hover:-translate-y-2 transition-transform duration-300">
+                        <div class="bg-gray-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
+                            <i data-lucide="message-circle" class="text-emerald-400 w-10 h-10"></i>
+                        </div>
+                        <h4 class="text-white font-bold mb-2">Atención WhatsApp</h4>
+                        <p class="text-gray-400 text-sm">Contacto directo y rápido</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="view-tienda" class="tab-content animate-fade-in py-12 px-4 max-w-5xl mx-auto">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-black text-white mb-4">Catálogo de <span class="text-purple-500">Colecciones</span></h1>
+                <p class="text-gray-400">Recursos premium listos para instalar. Compra única, acceso para siempre.</p>
+            </div>
+            <div id="tienda-container" class="space-y-16">
+                </div>
+        </div>
+
+        <div id="view-combos" class="tab-content animate-fade-in py-12 px-4 max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-black text-white mb-4">Combos <span class="text-[#ff512f]">Especiales</span></h1>
+                <p class="text-gray-400">Packs armados estratégicamente para ahorrar dinero y potenciar tu estudio.</p>
+            </div>
+            <div id="combos-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                </div>
+        </div>
+
+        <div id="view-soporte" class="tab-content animate-fade-in py-12 px-4 max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-black text-white mb-4">Centro de <span class="text-green-400">Soporte</span></h1>
+                <p class="text-gray-400">Estamos aquí para ayudarte. Instalamos todo por vos para que solo te preocupes por crear.</p>
+            </div>
+            <div class="space-y-8">
+                <div class="bg-[#15151a] border border-gray-800 p-8 rounded-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 opacity-5 w-64 h-64 pointer-events-none">
+                        <i data-lucide="monitor" class="w-full h-full"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                        <i data-lucide="cpu" class="text-purple-500 mr-3"></i> ¿Cómo funciona la instalación remota?
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                        <div class="bg-black/40 p-5 rounded-xl border border-gray-800/50">
+                            <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold mb-3">1</div>
+                            <h4 class="text-white font-bold mb-2">Realizas tu compra</h4>
+                            <p class="text-gray-400 text-sm">Te dirige automáticamente a un link de Google Drive. Descargas lo que quieras utilizar proximamente.</p>
+                        </div>
+                        <div class="bg-black/40 p-5 rounded-xl border border-gray-800/50">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mb-3">2</div>
+                            <h4 class="text-white font-bold mb-2">Descargas TeamViewer</h4>
+                            <p class="text-gray-400 text-sm">Es un programa gratuito que nos permite acceder a tu PC temporalmente de forma 100% segura.</p>
+                        </div>
+                        <div class="bg-black/40 p-5 rounded-xl border border-gray-800/50">
+                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mb-3">3</div>
+                            <h4 class="text-white font-bold mb-2">Nos conectamos</h4>
+                            <p class="text-gray-400 text-sm">Nos envías un mensaje a WhatsApp, nos conectamos y dejamos todo instalado, activado y configurado en tu DAW.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-[#15151a] border border-gray-800 p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-2 flex items-center">
+                            <i data-lucide="credit-card" class="text-blue-500 mr-3"></i> Métodos de Pago
+                        </h2>
+                        <p class="text-gray-400 mb-4 md:mb-0">Aceptamos todas las tarjetas y plataformas seguras.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 md:gap-4 mt-4 md:mt-0">
+                        <div class="bg-white px-4 py-2 rounded font-bold text-[#009EE3]">MercadoPago</div>
+                        <div class="bg-gray-800 px-4 py-2 rounded font-bold text-white border border-gray-700">Transferencia</div>
+                        <div class="bg-gradient-to-r from-orange-500 to-yellow-500 px-4 py-2 rounded font-bold text-white shadow-lg">Tarjeta</div>
+                    </div>
+                </div>
+
+                <div class="bg-[#15151a] border border-gray-800 p-8 rounded-2xl">
+                    <h2 class="text-2xl font-bold text-white mb-6">Preguntas Frecuentes</h2>
+                    <div class="space-y-4">
+                        <div class="bg-black/30 p-4 rounded-lg border border-gray-800">
+                            <h4 class="text-white font-bold mb-1 flex items-start"><span class="text-purple-500 mr-2 mt-0.5">Q.</span> ¿Los programas son permanentes?</h4>
+                            <p class="text-gray-400 text-sm ml-6">Sí. Todo lo que adquieres tiene licencia/activación permanente. No hay pagos mensuales ni suscripciones.</p>
+                        </div>
+                        <div class="bg-black/30 p-4 rounded-lg border border-gray-800">
+                            <h4 class="text-white font-bold mb-1 flex items-start"><span class="text-purple-500 mr-2 mt-0.5">Q.</span> ¿Sirven para Mac y Windows?</h4>
+                            <p class="text-gray-400 text-sm ml-6">La mayoría de nuestras colecciones son compatibles con ambos sistemas operativos. Al comprar, nos indicas tu SO y te enviamos la versión correcta.</p>
+                        </div>
+                        <div class="bg-black/30 p-4 rounded-lg border border-gray-800">
+                            <h4 class="text-white font-bold mb-1 flex items-start"><span class="text-purple-500 mr-2 mt-0.5">Q.</span> ¿Qué pasa si formateo mi PC?</h4>
+                            <p class="text-gray-400 text-sm ml-6">Tus links de descarga quedan activos para siempre en tu correo. Si necesitas ayuda para reinstalar, nuestro soporte te asiste sin cargo extra.</p>
+                        </div>
+                        <div class="bg-black/30 p-4 rounded-lg border border-gray-800">
+                            <h4 class="text-white font-bold mb-1 flex items-start"><span class="text-purple-500 mr-2 mt-0.5">Q.</span> ¿Cuánto tarda la instalación remota?</h4>
+                            <p class="text-gray-400 text-sm ml-6">Depende del pack, pero normalmente entre 15 y 30 minutos dejamos todo funcionando perfecto y testeado en tu DAW.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-[#050507] border-t border-gray-900 pt-16 pb-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            <div class="col-span-1 md:col-span-2">
+                <div class="flex items-center space-x-2 mb-4">
+                    <div class="w-8 h-8 bg-gradient-to-tr from-purple-600 to-blue-600 rounded flex items-center justify-center">
+                        <i data-lucide="headphones" class="text-white w-4 h-4"></i>
+                    </div>
+                    <h2 class="text-xl font-black text-white">ZONA AUDIO ARG</h2>
+                </div>
+                <p class="text-gray-500 text-sm max-w-sm mb-6">Proveemos herramientas profesionales para productores musicales. Plugins, DAWs, Librerías y el mejor soporte técnico remoto de Argentina.</p>
+                <div class="flex space-x-4">
+                    <div class="bg-white/10 p-2 rounded"><i data-lucide="credit-card" class="text-gray-300 w-5 h-5"></i></div>
+                    <div class="bg-white/10 p-2 rounded"><i data-lucide="shield-check" class="text-gray-300 w-5 h-5"></i></div>
+                    <div class="bg-white/10 p-2 rounded"><i data-lucide="download" class="text-gray-300 w-5 h-5"></i></div>
+                </div>
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tight leading-none text-white group-hover:text-purple-400 transition-colors">ZONA AUDIO</h1>
-              <p className="text-[10px] tracking-widest text-blue-400 font-bold uppercase">Argentina</p>
+                <h4 class="text-white font-bold mb-4 uppercase text-sm tracking-wider">Enlaces</h4>
+                <ul class="space-y-2 text-sm text-gray-500">
+                    <li><button onclick="setTab('inicio')" class="hover:text-purple-400">Inicio</button></li>
+                    <li><button onclick="setTab('tienda')" class="hover:text-purple-400">Tienda de Colecciones</button></li>
+                    <li><button onclick="setTab('combos')" class="hover:text-purple-400">Combos Especiales</button></li>
+                    <li><button onclick="setTab('soporte')" class="hover:text-purple-400">Soporte y FAQ</button></li>
+                </ul>
             </div>
-          </div>
-
-          {/* DESKTOP NAV */}
-          <nav className="hidden md:flex space-x-8">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`text-sm font-bold tracking-wider transition-colors relative ${
-                  activeTab === item.id ? 'text-white' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {item.label}
-                {activeTab === item.id && (
-                  <span className="absolute -bottom-7 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"></span>
-                )}
-              </button>
-            ))}
-          </nav>
-
-          {/* ACTIONS */}
-          <div className="flex items-center space-x-4">
-            <button 
-              className="md:hidden text-gray-300 hover:text-white"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
-          </div>
+            <div>
+                <h4 class="text-white font-bold mb-4 uppercase text-sm tracking-wider">Contacto</h4>
+                <ul class="space-y-3 text-sm text-gray-500">
+                    <li class="flex items-center"><i data-lucide="message-circle" class="w-4 h-4 mr-2 text-green-500"></i> 11 2240-5441</li>
+                    <li class="flex items-center"><i data-lucide="monitor" class="w-4 h-4 mr-2 text-blue-500"></i> Soporte vía TeamViewer</li>
+                    <li class="flex items-center"><i data-lucide="clock" class="w-4 h-4 mr-2 text-purple-500"></i> Entrega Inmediata</li>
+                </ul>
+            </div>
         </div>
-
-        {/* MOBILE NAV DROPDOWN */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-20 left-0 w-full bg-[#121216] border-b border-gray-800 shadow-2xl z-50 animate-fade-in">
-            <div className="flex flex-col py-4 px-4 space-y-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`text-left text-lg font-bold py-2 px-4 rounded-lg ${
-                    activeTab === item.id ? 'bg-purple-900/40 text-purple-400 border border-purple-500/30' : 'text-gray-400'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* MAIN CONTENT AREA */}
-      <main className="min-h-screen">
-        {activeTab === 'inicio' && <Inicio setTab={handleNavClick} />}
-        {activeTab === 'tienda' && <Tienda openModal={() => setIsModalOpen(true)} />}
-        {activeTab === 'combos' && <CombosView openModal={() => setIsModalOpen(true)} />}
-        {activeTab === 'soporte' && <Soporte />}
-      </main>
-
-      {/* FOOTER */}
-      <footer className="bg-[#050507] border-t border-gray-900 pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div className="col-span-1 md:col-span-2">
-             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-tr from-purple-600 to-blue-600 rounded flex items-center justify-center">
-                <Headphones className="text-white" size={18} />
-              </div>
-              <h2 className="text-xl font-black text-white">ZONA AUDIO ARG</h2>
-            </div>
-            <p className="text-gray-500 text-sm max-w-sm mb-6">
-              Proveemos herramientas profesionales para productores musicales. Plugins, DAWs, Librerías y el mejor soporte técnico remoto de Argentina.
-            </p>
-            <div className="flex space-x-4">
-               {/* Pago Icons (Simulated) */}
-               <div className="bg-white/10 p-2 rounded"><CreditCard size={20} className="text-gray-300" /></div>
-               <div className="bg-white/10 p-2 rounded"><ShieldCheck size={20} className="text-gray-300" /></div>
-               <div className="bg-white/10 p-2 rounded"><Download size={20} className="text-gray-300" /></div>
-            </div>
-          </div>
-          
-          <div>
-            <h4 className="text-white font-bold mb-4 uppercase text-sm tracking-wider">Enlaces</h4>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li><button onClick={() => handleNavClick('inicio')} className="hover:text-purple-400">Inicio</button></li>
-              <li><button onClick={() => handleNavClick('tienda')} className="hover:text-purple-400">Tienda de Colecciones</button></li>
-              <li><button onClick={() => handleNavClick('combos')} className="hover:text-purple-400">Combos Especiales</button></li>
-              <li><button onClick={() => handleNavClick('soporte')} className="hover:text-purple-400">Soporte y FAQ</button></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-bold mb-4 uppercase text-sm tracking-wider">Contacto</h4>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li className="flex items-center"><MessageCircle size={16} className="mr-2 text-green-500" /> 11 2240-5441</li>
-              <li className="flex items-center"><Monitor size={16} className="mr-2 text-blue-500" /> Soporte vía TeamViewer</li>
-              <li className="flex items-center"><Clock size={16} className="mr-2 text-purple-500" /> Entrega Inmediata</li>
-            </ul>
-          </div>
+        <div class="max-w-7xl mx-auto px-4 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600">
+            <p>© 2024 Zona Audio Arg. Todos los derechos reservados.</p>
+            <p class="mt-2 md:mt-0 flex items-center">Optimizado para ventas <i data-lucide="zap" class="text-yellow-500 w-3 h-3 ml-1"></i></p>
         </div>
-        
-        <div className="max-w-7xl mx-auto px-4 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600">
-          <p>© 2024 Zona Audio Arg. Todos los derechos reservados.</p>
-          <p className="mt-2 md:mt-0 flex items-center">
-            Optimizado para ventas <Zap size={12} className="text-yellow-500 ml-1" fill="currentColor"/>
-          </p>
-        </div>
-      </footer>
+    </footer>
 
-      {/* FLOATING WHATSAPP BUTTON */}
-      <a 
-        href="https://wa.me/5491122405441"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 bg-[#25D366] hover:bg-[#20b858] text-white p-4 rounded-full shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:shadow-[0_0_30px_rgba(37,211,102,0.6)] transition-all z-50 flex items-center justify-center group hover:scale-110"
-        title="Contactar por WhatsApp"
-      >
-        <MessageCircle size={32} />
-        <span className="absolute right-full mr-4 bg-black/80 text-white text-xs font-bold px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-          ¡Chateá con nosotros!
+    <a href="https://wa.me/5491122405441" target="_blank" rel="noopener noreferrer" class="fixed bottom-6 right-6 bg-[#25D366] hover:bg-[#20b858] text-white p-4 rounded-full shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:shadow-[0_0_30px_rgba(37,211,102,0.6)] transition-all z-50 flex items-center justify-center group hover:scale-110" title="Contactar por WhatsApp">
+        <i data-lucide="message-circle" class="w-8 h-8"></i>
+        <span class="absolute right-full mr-4 bg-black/80 text-white text-xs font-bold px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            ¡Chateá con nosotros!
         </span>
-      </a>
+    </a>
 
-      {/* CHECKOUT MODAL */}
-      <ModalCompra isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      
-    </div>
-  );
-}
+    <script>
+        // --- AQUÍ ESTÁN TUS DATOS (PUEDES MODIFICARLOS CUANDO QUIERAS) ---
+        const collections = [
+            { id: 'col-1', title: 'Colección Completa de Cursos y Guías', shortDesc: 'Domina la producción desde cero hasta nivel experto.', description: 'Más de 500 horas de contenido en video HD, guías en PDF y proyectos desarmados de los mejores productores del mundo. Aprende teoría musical, diseño sonoro, mezcla y mastering paso a paso.', items: ['Masterclasses exclusivas', 'Guías de Teoría Musical y Armonía', 'Mastering', 'Técnicas de mezcla de la industria'], qty: '+200 Recursos', value: '$18.000', price: '$7.999', image: 'https://i3.wp.com/silencio.com.ar/wp-content/uploads/2024/03/cursos-produccion-musical-1.jpg?resize=1920,1282&ssl=1', paymentLink: 'https://mpago.la/2WpfyMa' },
+            { id: 'col-2', title: 'Colección Completa de DAWs', shortDesc: 'Los secuenciadores líderes del mercado actualizados.', description: 'Obtén las últimas versiones de los Digital Audio Workstations más utilizados en la industria musical, optimizados y listos para trabajar en tu estudio sin limitaciones.', items: ['Ableton Live Suite', 'FL Studio', 'Cubase', 'Pro Tools'], qty: 'Top 5 DAWs', value: '$19.000', price: '$7.999', image: 'https://www.48tracks.com/content-assets/public/eyJhbGciOiJIUzI1NiJ9.eyJvYmplY3Rfa2V5IjoiYXEzemF2Y3czaWlpOXMxNGk5c2x5d245ZXl2bCIsImRvbWFpbiI6Ind3dy40OHRyYWNrcy5jb20ifQ.NaFYRKCEaiJ5ei7v_hgcZZiqsFdaXLBQCEWrZ6eTwHs', paymentLink: 'https://mpago.la/2rzZuDy' },
+            { id: 'col-3', title: 'Colección Completa de Librerías y MIDI', shortDesc: 'El arsenal sonoro definitivo para cualquier género.', description: 'Miles de samples, loops, one-shots y archivos MIDI organizados por género.', items: ['Packs de Reggaeton, Trap, Tech House, Pop y todos los generos', 'Librerías Kontakt Premium', 'Más de 10.000 archivos MIDI de acordes y melodías', 'Baterías acústicas y electrónicas procesadas'], qty: 'Miles de Sonidos', value: '$22.000', price: '$7.999', image: 'https://wololosound.com/wp-content/uploads/programas-para-hacer-musica.jpg', paymentLink: 'https://mpago.la/1Sxd65g' },
+            { id: 'col-4', title: 'Colección Completa de Plantillas y Presets', shortDesc: 'Acelera tu flujo de trabajo con configuraciones pro.', description: 'Bancos de sonidos para los sintetizadores más famosos y plantillas de mezcla/mastering listas para cargar tus vocales o instrumentales y sonar a nivel radio.', items: ['Presets para Serum, Omnisphere', 'Vocal Chains para grabación (Urbano, Pop, Rock, etc.)', 'Templates de Mezcla y Mastering', 'Cadenas de efectos para bajos y sintes'], qty: '+15.000 Archivos', value: '$15.000', price: '$7.999', image: 'https://www.safecreative.org/tips/es/wp-content/uploads/2024/06/ableton1-696x435.jpg', paymentLink: 'https://mpago.la/2Q5eqWQ' },
+            { id: 'col-5', title: 'Colección Completa de Plugins', shortDesc: 'Los efectos e instrumentos virtuales que necesitas para trabajar profesionalmente', description: 'Las suites de mezcla, ecualización, compresión y masterización que utilizan los ingenieros ganadores de Grammys, junto con los sintetizadores más potentes.', items: ['Suites de FabFilter, Waves, iZotope, etc.', 'Autotune Pro y procesadores vocales', 'Sintetizadores (Omnisphere, Kontakt, Serum, Nexus)', 'Emuladores de equipo analógico (SSL, API, etc.)', 'VSTs esenciales (Keyscape, Addictive Drums, GuitarRig Pro, etc.)'], qty: '+500 Plugins', value: '$25.000', price: '$7.999', image: 'https://venusmamba.com/wp-content/uploads/2024/10/1728154015908_n3va0j_2_0-1024x572.jpg', paymentLink: 'https://mpago.la/2dSpQ4w' }
+        ];
+
+        const combos = [
+            { id: 'cmb-1', title: 'Pack Inicial Grabación', desc: 'Todo lo que necesitas para grabar voces con calidad profesional en casa.', includes: ['Colección completa de DAWs', 'Antares Auto-Tune Pro', 'FabFilter Pro Bundle', 'Vocal Presets y plantillas de grabación', 'Videos tutoriales para comenzar a grabar'], oldPrice: '$20.000', price: '$9.999', savings: '$10.001', urgency: 'Oferta termina hoy', paymentLink: 'https://mpago.la/2iSkWVy' },
+            { id: 'cmb-2', title: 'Pack Productor Urbano', desc: 'El kit definitivo para hacer beats', includes: ['Colección completa de DAWs', 'Librerías multi-género', 'Pack de plugins esenciales', 'Colección completa de cursos y guías'], oldPrice: '$22.000', price: '$9.999', savings: '$12.001', urgency: 'Últimos 3 disponibles', paymentLink: 'https://mpago.la/1TZs13v' },
+            { id: 'cmb-3', title: 'Pack Mezcla y Mastering', desc: 'Herramientas de ingeniería para pulir tus tracks al nivel de la industria.', includes: ['Colección completa de DAWs', 'Colección completa de plugins y pack de plugins', 'Colección completa de cursos y guías'], oldPrice: '$25.000', price: '$9.999', savings: '$15.001', urgency: 'Solo por 48hs', paymentLink: 'https://mpago.la/17uZJCf' },
+            { id: 'cmb-4', title: 'Pack Full', desc: 'La suite completa para transformar tu habitación en un estudio pro.', includes: ['Colección completa de DAWs', 'Colección completa de plantillas y presets', 'Librerías multi-género', 'Colección completa de cursos y guías', 'Colección completa de packs y plugins'], oldPrice: '$35.000', price: '$13.999', savings: '$21.001', urgency: 'Oferta por tiempo limitado', paymentLink: 'https://mpago.la/2yjZ3Z2' }
+        ];
+
+        const carouselImages = [
+            { img: 'https://venusmamba.com/wp-content/uploads/2024/10/1728154015908_n3va0j_2_0-1024x572.jpg', title: 'PLUGINS PROFESIONALES', subtitle: 'Lleva tu sonido al siguiente nivel' },
+            { img: 'https://www.48tracks.com/content-assets/public/eyJhbGciOiJIUzI1NiJ9.eyJvYmplY3Rfa2V5IjoiYXEzemF2Y3czaWlpOXMxNGk5c2x5d245ZXl2bCIsImRvbWFpbiI6Ind3dy40OHRyYWNrcy5jb20ifQ.NaFYRKCEaiJ5ei7v_hgcZZiqsFdaXLBQCEWrZ6eTwHs', title: 'DAWs ACTUALIZADOS', subtitle: 'El corazón de tu estudio' },
+            { img: 'https://wololosound.com/wp-content/uploads/programas-para-hacer-musica.jpg', title: 'LIBRERÍAS DE SONIDO', subtitle: 'Los mejores samples para crear sin límites' },
+            { img: 'https://guitarrec.com/wp-content/uploads/2025/06/Mejores-plugins-gratis-VST-AU-AAX-lista-GuitarRec-620x349.jpg', title: 'COMBOS ESPECIALES', subtitle: 'Ahorra comprando el paquete que necesitas' }
+        ];
+
+        // --- LÓGICA DE LA PÁGINA ---
+
+        // 1. Manejo de Pestañas (Navegación)
+        function setTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + tabId).classList.add('active');
+            
+            // Actualizar colores del menú
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-white');
+                btn.classList.add('text-gray-400');
+                btn.querySelector('.nav-indicator').classList.add('hidden');
+            });
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-gray-400');
+                activeBtn.classList.add('text-white');
+                activeBtn.querySelector('.nav-indicator').classList.remove('hidden');
+            }
+            
+            // Cerrar menú móvil y volver arriba
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        // 2. Renderizar Colecciones en Inicio y Tienda
+        function renderCollections() {
+            // Para la vista Tienda (Todas)
+            const tiendaHtml = collections.map(col => `
+                <div class="bg-[#15151a] border border-gray-800 rounded-2xl overflow-hidden flex flex-col md:flex-row hover:border-purple-500/30 transition-colors shadow-2xl">
+                    <div class="md:w-5/12 relative">
+                        <img src="${col.image}" alt="${col.title}" class="w-full h-full object-cover min-h-[300px]" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#15151a] via-[#15151a]/20 to-transparent md:bg-gradient-to-r md:from-transparent md:to-[#15151a]"></div>
+                        <div class="absolute top-4 left-4 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">${col.qty}</div>
+                    </div>
+                    <div class="md:w-7/12 p-8 flex flex-col">
+                        <h2 class="text-3xl font-bold text-white mb-2">${col.title}</h2>
+                        <p class="text-purple-300 font-medium mb-4">${col.shortDesc}</p>
+                        <p class="text-gray-400 text-sm mb-6 leading-relaxed">${col.description}</p>
+                        <div class="mb-6 bg-black/40 p-5 rounded-xl border border-gray-800">
+                            <h4 class="text-white text-sm font-bold uppercase tracking-wider mb-3 flex items-center">
+                                <i data-lucide="server" class="w-4 h-4 mr-2 text-blue-500"></i> Contenido Principal:
+                            </h4>
+                            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                ${col.items.map(item => `<li class="text-sm text-gray-300 flex items-start"><span class="text-blue-500 mr-2 mt-0.5">•</span> ${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-900/20 to-blue-900/20 border border-green-500/20 rounded-xl p-4 mb-6">
+                            <ul class="space-y-2">
+                                <li class="flex items-center text-sm text-gray-200"><i data-lucide="check-circle-2" class="w-4 h-4 text-green-500 mr-2"></i> Acceso completo</li>
+                                <li class="flex items-center text-sm text-gray-200"><i data-lucide="check-circle-2" class="w-4 h-4 text-green-500 mr-2"></i> Entrega digital inmediata</li>
+                                <li class="flex items-center text-sm text-gray-200"><i data-lucide="check-circle-2" class="w-4 h-4 text-green-500 mr-2"></i> Instalación remota</li>
+                            </ul>
+                        </div>
+                        <div class="mt-auto flex flex-col sm:flex-row items-center justify-between border-t border-gray-800 pt-6">
+                            <div class="mb-4 sm:mb-0 text-center sm:text-left w-full sm:w-auto">
+                                <p class="text-gray-500 text-sm">Valor: <span class="line-through">${col.value}</span></p>
+                                <p class="text-4xl font-black text-white">${col.price} <span class="text-sm font-normal text-gray-500">ARS</span></p>
+                            </div>
+                            <a href="${col.paymentLink}" target="_blank" class="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-4 px-10 rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center transform hover:-translate-y-1">
+                                <i data-lucide="shopping-cart" class="w-5 h-5 mr-2"></i> Comprar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('tienda-container').innerHTML = tiendaHtml;
+
+            // Para la vista Inicio (Resumen)
+            const inicioColHtml = collections.slice(0,5).map(col => `
+                <div class="bg-[#15151a] border border-gray-800 rounded-xl overflow-hidden hover:border-purple-500/50 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] transition-all group">
+                    <div class="h-48 overflow-hidden relative">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#15151a] to-transparent z-10"></div>
+                        <img src="${col.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                    <div class="p-6 relative z-20 -mt-10">
+                        <div class="bg-purple-900/80 backdrop-blur-md text-xs text-purple-200 font-bold px-3 py-1 rounded-full inline-block mb-3 border border-purple-500/30">Premium</div>
+                        <h3 class="text-xl font-bold text-white mb-2">${col.title}</h3>
+                        <p class="text-gray-400 text-sm mb-6">${col.shortDesc}</p>
+                        <button onclick="setTab('tienda')" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 rounded border border-gray-600 flex items-center justify-center">
+                            Ver Colección <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('inicio-collections-grid').innerHTML = inicioColHtml;
+        }
+
+        // 3. Renderizar Combos
+        function renderCombos() {
+            const html = combos.map(combo => `
+                <div class="bg-gradient-to-br from-[#1c1c24] to-[#111116] border border-gray-700 rounded-2xl p-6 relative overflow-hidden group hover:border-[#dd2476] transition-all">
+                    <div class="absolute top-4 right-4 bg-red-500/10 border border-red-500/50 text-red-400 text-xs font-bold px-3 py-1 rounded-full flex items-center animate-pulse">
+                        <i data-lucide="clock" class="w-3 h-3 mr-1"></i> ${combo.urgency}
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2 pr-24">${combo.title}</h3>
+                    <p class="text-gray-400 text-sm mb-6 h-10">${combo.desc}</p>
+                    <div class="bg-black/30 rounded-lg p-4 mb-6 border border-gray-800/50">
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Incluye:</p>
+                        <ul class="space-y-2">
+                            ${combo.includes.map(item => `
+                                <li class="text-sm text-gray-300 flex items-start">
+                                    <i data-lucide="check-circle-2" class="w-4 h-4 text-green-400 mr-2 mt-0.5 shrink-0"></i> ${item}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    <div class="flex items-end justify-between mt-auto">
+                        <div>
+                            <p class="text-gray-500 line-through text-sm">${combo.oldPrice}</p>
+                            <p class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">${combo.price}</p>
+                            <p class="text-green-400 text-xs font-bold mt-1 bg-green-400/10 inline-block px-2 py-0.5 rounded">Ahorras ${combo.savings}</p>
+                        </div>
+                        <a href="${combo.paymentLink}" target="_blank" class="bg-white text-black hover:bg-gray-200 font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-white/20 transition-all flex items-center">
+                            Comprar
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('inicio-combos-grid').innerHTML = html;
+            document.getElementById('combos-container').innerHTML = html;
+        }
+
+        // 4. Carrusel Automático
+        function initCarousel() {
+            const container = document.getElementById('carousel-container');
+            let current = 0;
+
+            function drawCarousel() {
+                container.innerHTML = carouselImages.map((slide, index) => `
+                    <div class="absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ${index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}">
+                        <img src="${slide.img}" class="w-full h-full object-cover opacity-50" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent"></div>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                            <h2 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)] mb-2 uppercase tracking-tight">${slide.title}</h2>
+                            <p class="text-lg md:text-2xl text-gray-300 font-light">${slide.subtitle}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            drawCarousel();
+            setInterval(() => {
+                current = (current + 1) % carouselImages.length;
+                drawCarousel();
+            }, 4000);
+        }
+
+        // Inicializar todo cuando carga la página
+        window.onload = () => {
+            renderCollections();
+            renderCombos();
+            initCarousel();
+            // Inicia los iconos de Lucide
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
